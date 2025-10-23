@@ -258,7 +258,7 @@
             </div>
             <div class="form-group">
                 <label for="totalKemasan">Total Kemasan:</label>
-                <input type="text" id="totalKemasan" placeholder="Cth: 4" required>
+                <input type="text" id="totalKemasan" placeholder="" required>
             </div>
             <div class="form-group">
                 <label for="jenisKemasan">Jenis Kemasan:</label>
@@ -275,23 +275,19 @@
         <div class="grid-container grid-4">
             <div class="form-group">
                 <label for="beratBarang">Berat Barang (Kg):</label>
-                <input type="number" id="beratBarang" step="0.01" value="" placeholder="Cth: 297.2" required>
+                <input type="number" id="beratBarang" step="0.01" value="" placeholder="" required>
             </div>
             <div class="form-group">
                 <label for="hargaBarang">Harga Barang (Rp):</label>
-                <input type="text" id="hargaBarang" placeholder="Cth: 131.779.417,47" required> 
+                <input type="text" id="hargaBarang" placeholder="" required> 
             </div>
             
-            <div class="form-group hidden" id="hargaBahanBakuGroup">
-                <label for="hargaBahanBaku">Harga Bahan Baku (Rp):</label>
-                <input type="text" id="hargaBahanBaku" placeholder="Cth: 50.000.000">
-            </div>
-
+            <div class="form-group"> </div>
+            
             <div class="form-group">
                 <label for="jenisDokumen">Jenis Dokumen:</label>
                 <select id="jenisDokumen" required>
                     <option value="" disabled selected>Pilih Jenis Dokumen</option>
-                    <option value="PPFTZ 01 TLDDP_KONV">PPFTZ 01 TLDDP + Konversi</option>
                     <option value="PPFTZ 01 TLDDP">PPFTZ 01 TLDDP (BM, PPN, PPh)</option>
                     <option value="CN23">CN23 (BM, PPh)</option>
                 </select>
@@ -314,7 +310,7 @@
             <div class="form-group">
                 <label for="jumlahBarang">Jumlah Barang & Satuan:</label>
                 <div class="grid-2-1">
-                    <input type="number" id="jumlahBarang" min="1" value="" placeholder="Cth: 31325" required>
+                    <input type="number" id="jumlahBarang" min="1" value="" placeholder="" required>
                     <select id="satuanBarang" required>
                         <option value="" disabled selected>Pilih Satuan</option>
                         <option value="PCE">PCE</option>
@@ -450,8 +446,8 @@
     const hsCodeInput = document.getElementById('hsCodeInput');
     const jenisDokumenSelect = document.getElementById('jenisDokumen');
     const hargaBarangInput = document.getElementById('hargaBarang');
-    const hargaBahanBakuInput = document.getElementById('hargaBahanBaku');
-    const hargaBahanBakuGroup = document.getElementById('hargaBahanBakuGroup');
+    // const hargaBahanBakuInput = document.getElementById('hargaBahanBaku'); // Dihapus
+    // const hargaBahanBakuGroup = document.getElementById('hargaBahanBakuGroup'); // Dihapus
     const totalKemasanInput = document.getElementById('totalKemasan');
     const tarifBMInput = document.getElementById('tarifBM');
     const tarifPPNInput = document.getElementById('tarifPPN');
@@ -486,8 +482,8 @@
             komoditiList.appendChild(option);
         });
 
-        // Set Listener untuk input Rupiah (Harga Barang & Harga Bahan Baku)
-        [hargaBarangInput, hargaBahanBakuInput].forEach(input => {
+        // Set Listener untuk input Rupiah (Hanya Harga Barang)
+        [hargaBarangInput].forEach(input => {
             input.addEventListener('input', function() {
                 const cleanedValue = cleanRupiah(this.value);
                 // Hanya format jika ada nilai yang dimasukkan
@@ -512,7 +508,7 @@
             hitungPajak();
         });
 
-        // Panggil pertama kali untuk set default display PPN (hidden) dan Bahan Baku (hidden)
+        // Panggil pertama kali untuk set default display PPN (hidden)
         updateTarifPajak();
     }
     
@@ -536,7 +532,7 @@
     }
 
 
-    // --- 6. Fungsi Update Tarif Pajak, Tampilan PPN, dan Kolom Bahan Baku ---
+    // --- 6. Fungsi Update Tarif Pajak dan Tampilan PPN ---
     function checkManualMode(komoditi) {
         const isManual = komoditi && komoditi.manual === true;
         const selectedDokumen = jenisDokumenSelect.value;
@@ -546,8 +542,8 @@
         tarifBMInput.readOnly = !isManual;
         tarifPPHInput.readOnly = !isManual;
         
-        // PPN hanya boleh diisi manual jika dokumen PPFTZ (baik Konv maupun Non-Konv) dan mode manual
-        const isPPFTZ = selectedDokumen.startsWith('PPFTZ 01 TLDDP');
+        // PPN hanya boleh diisi manual jika dokumen PPFTZ dan mode manual
+        const isPPFTZ = selectedDokumen === 'PPFTZ 01 TLDDP';
         tarifPPNInput.readOnly = !(isManual && isPPFTZ);
 
         // Jika mode manual, pastikan input tarif diizinkan
@@ -574,8 +570,10 @@
             tarifPPHInput.value = parseFloat(komoditi.pph).toFixed(1);
             
             // Atur tarif PPN untuk PPFTZ
-            if (selectedDokumen.startsWith('PPFTZ 01 TLDDP')) {
+            if (selectedDokumen === 'PPFTZ 01 TLDDP') {
                 tarifPPNInput.value = parseFloat(komoditi.ppn || 0).toFixed(1);
+            } else {
+                 tarifPPNInput.value = 0;
             }
 
         } else if (!komoditi) {
@@ -588,28 +586,17 @@
              }
         }
 
-        // --- Logika Tampilan PPN dan Harga Bahan Baku berdasarkan Jenis Dokumen ---
+        // --- Logika Tampilan PPN berdasarkan Jenis Dokumen ---
         
-        if (selectedDokumen.startsWith('PPFTZ 01 TLDDP')) {
+        if (selectedDokumen === 'PPFTZ 01 TLDDP') {
             // Tampilkan kolom PPN
             ppnGroup.classList.remove('hidden');
             
-            if (selectedDokumen === 'PPFTZ 01 TLDDP_KONV') {
-                // Tampilkan Harga Bahan Baku
-                hargaBahanBakuGroup.classList.remove('hidden');
-            } else {
-                // Sembunyikan Harga Bahan Baku
-                hargaBahanBakuGroup.classList.add('hidden');
-                hargaBahanBakuInput.value = ''; // Kosongkan nilainya
-            }
-
         } else if (selectedDokumen === 'CN23') {
-            // Sembunyikan PPN dan Harga Bahan Baku
+            // Sembunyikan PPN
             ppnGroup.classList.add('hidden');
-            hargaBahanBakuGroup.classList.add('hidden');
             
             tarifPPNInput.value = 0; // PPN 0% untuk CN23
-            hargaBahanBakuInput.value = ''; // Kosongkan nilainya
         }
 
         // Jika hasil pajak sudah ditampilkan, hitung ulang secara otomatis
@@ -630,7 +617,6 @@
         }
 
         const hargaBarang = cleanRupiah(hargaBarangInput.value);
-        const hargaBahanBaku = cleanRupiah(hargaBahanBakuInput.value);
         const beratBarang = parseFloat(document.getElementById('beratBarang').value);
         const jumlahBarang = parseInt(document.getElementById('jumlahBarang').value);
         const hsCode = hsCodeInput.value.trim();
@@ -639,12 +625,6 @@
         const tarifBM = parseFloat(tarifBMInput.value) / 100;
         const tarifPPN = parseFloat(tarifPPNInput.value) / 100;
         const tarifPPH = parseFloat(tarifPPHInput.value) / 100;
-
-        // Validasi Kebutuhan Data (Konversi)
-        if (selectedDokumen === 'PPFTZ 01 TLDDP_KONV' && (hargaBahanBaku === 0 || isNaN(hargaBahanBaku))) {
-             alert("Anda memilih PPFTZ 01 TLDDP + Konversi. Harga Bahan Baku harus diisi.");
-             return;
-        }
 
         // Validasi Dasar
         if (selectedDokumen === '') {
@@ -657,28 +637,18 @@
         }
         
         // --- 2. Perhitungan Dasar Pajak ---
-        let NDP = 0;
-        let nilaiPajakDasar = 0; // DPP PPN/PPh, N-D-P BM
-        let keteranganNDP = "Harga Barang";
+        let NDP = hargaBarang;
+        let nilaiPajakDasar = hargaBarang; // DPP PPN/PPh, N-D-P BM
+        let keteranganNDP = "Harga Barang (NDP)";
         
-        if (selectedDokumen === 'PPFTZ 01 TLDDP_KONV') {
-            NDP = hargaBahanBaku;
-            nilaiPajakDasar = hargaBarang; // DPP PPN/PPh (Nilai Konversi) adalah Harga Barang
-            keteranganNDP = "Harga Bahan Baku (NDP BM)";
-        } else {
-            NDP = hargaBarang;
-            nilaiPajakDasar = hargaBarang;
-            keteranganNDP = "Harga Barang (NDP)";
-        }
-        
-        // Bea Masuk (BM) dihitung dari NDP (Harga Barang atau Harga Bahan Baku)
+        // Bea Masuk (BM) dihitung dari NDP (Harga Barang)
         const beaMasuk = NDP * tarifBM;
         
         // Dasar Pengenaan Pajak PPN/PPh
         const DPPP = nilaiPajakDasar + beaMasuk;
         
         // PPN (Hanya jika PPFTZ)
-        const ppn = (selectedDokumen.startsWith('PPFTZ 01 TLDDP')) ? (DPPP * tarifPPN) : 0;
+        const ppn = (selectedDokumen === 'PPFTZ 01 TLDDP') ? (DPPP * tarifPPN) : 0;
         
         // PPh
         const pph = DPPP * tarifPPH;
@@ -691,28 +661,20 @@
         const jenisKemasan = document.getElementById('jenisKemasan').value;
         const totalKemasan = totalKemasanInput.value; // Ambil dari input text
 
-        const ppnTarifDisplay = (selectedDokumen.startsWith('PPFTZ 01 TLDDP')) ? (tarifPPN * 100).toFixed(1) : 0;
+        const ppnTarifDisplay = (selectedDokumen === 'PPFTZ 01 TLDDP') ? (tarifPPN * 100).toFixed(1) : 0;
 
         // Persiapan Tampilan PPN
         let ppnDisplay = '';
-        if (selectedDokumen.startsWith('PPFTZ 01 TLDDP')) {
+        if (selectedDokumen === 'PPFTZ 01 TLDDP') {
             ppnDisplay = `<div class="hasil-item"><span>PPN (${ppnTarifDisplay}%)</span><span>${formatRupiah(ppn)}</span></div>`;
         } else {
             ppnDisplay = `<div class="hasil-item" style="color: var(--color-secondary);"><span>PPN (0% - Dokumen ${selectedDokumen})</span><span>${formatRupiah(ppn)}</span></div>`;
         }
         
-        // Persiapan Tampilan Konversi/NDP
-        let konversiDisplay = '';
-        if (selectedDokumen === 'PPFTZ 01 TLDDP_KONV') {
-            konversiDisplay = `
-                <div class="hasil-item"><span>Nilai Konversi (DPPP/PPh)</span><span>${formatRupiah(hargaBarang)}</span></div>
-                <div class="hasil-item"><span>${keteranganNDP}</span><span>${formatRupiah(hargaBahanBaku)}</span></div>
-            `;
-        } else {
-             konversiDisplay = `
-                <div class="hasil-item"><span>${keteranganNDP}</span><span>${formatRupiah(hargaBarang)}</span></div>
-            `;
-        }
+        // Persiapan Tampilan NDP (Hanya Harga Barang)
+        let konversiDisplay = `
+            <div class="hasil-item"><span>${keteranganNDP}</span><span>${formatRupiah(hargaBarang)}</span></div>
+        `;
 
 
         // Final Output
