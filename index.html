@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="nailong-logo.png">
+    <title>Kalkulator Pajak Kiriman — CN23 & PPFTZ 01 TLDDP</title>
+    
+    <style>
+        /* Palet Warna & Font */
+        :root {
+            --color-primary: #007bff; /* Biru Cerah */
+            --color-secondary: #28a745; /* Hijau Sukses */
+            --color-warning: #ffc107; /* Kuning Peringatan */
+            --color-background: #f4f7f9; /* Latar Belakang Lembut */
+            --color-card: #ffffff;
+            --color-border: #dee2e6;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* CSS Dasar */
+        body { 
+            font-family: var(--font-family); 
+            margin: 0; 
+            padding: 20px;
+            background-color: var(--color-background); 
+            color: #343a40;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container { 
+            max-width: 950px; 
+            width: 100%;
+            margin: 20px 0; 
+            background: var(--color-card); 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        }
+
+        /* Header */
+        h1 { 
+            color: var(--color-primary); 
+            border-bottom: 3px solid var(--color-primary); 
+            padding-bottom: 10px; 
+            margin-bottom: 5px; 
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1em;
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+
+        /* Judul Section */
+        h2 { 
+            color: #343a40; 
+            margin-top: 30px; 
+            border-left: 5px solid var(--color-warning); 
+            padding-left: 12px; 
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.1em;
+            color: var(--color-primary);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        /* Input dan Form */
+        .form-group { margin-bottom: 15px; }
+        label { 
+            display: block; 
+            margin: 8px 0 4px; 
+            font-weight: 600; 
+            font-size: 0.9em;
+            color: #495057;
+        }
+        
+        input[type="text"], input[type="number"], select { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid var(--color-border); 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background-color: var(--color-card); 
+            font-size: 0.9em;
+        }
+
+        input:focus, select:focus { 
+            border-color: var(--color-primary); 
+            outline: none; 
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3); 
+        }
+
+        /* Input Readonly (untuk tarif otomatis) */
+        input[readonly] {
+            background-color: #e9ecef; /* Abu-abu muda untuk readonly */
+            cursor: not-allowed;
+        }
+        
+        /* Grid Layout */
+        .grid-container { 
+            display: grid; 
+            gap: 20px; 
+        }
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        
+        /* Layout khusus untuk Jumlah + Satuan */
+        .grid-2-1 { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr; 
+            gap: 10px; 
+        } 
+        
+        /* Tombol */
+        .button-group { display: flex; gap: 15px; margin-top: 30px; }
+        button { 
+            background-color: var(--color-secondary); 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 1.1em; 
+            font-weight: bold;
+            width: 100%; 
+            transition: background-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+        }
+        button:hover { 
+            background-color: #1e7e34; /* Hijau lebih gelap */
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        /* Hasil Pajak */
+        #hasilPajak { 
+            margin-top: 30px; 
+            padding: 25px; 
+            border: 2px solid var(--color-primary); 
+            border-radius: 8px; 
+            background-color: #e6f3ff; /* Latar belakang hasil yang lembut */
+        }
+        #hasilPajak h3 { 
+            color: var(--color-primary); 
+            border-bottom: 2px dashed var(--color-primary); 
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .hasil-item { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 8px 0; 
+            border-bottom: 1px dashed #b8daff; 
+            font-size: 0.95em;
+        }
+        .hasil-item:last-child { 
+            border-bottom: none; 
+            font-weight: bold; 
+            color: #d9534f; 
+            font-size: 1.2em; 
+        }
+        
+        /* Disclaimer dan Watermark */
+        .disclaimer { 
+            margin-top: 20px; 
+            font-size: 0.85em; 
+            color: #777; 
+            padding-top: 10px; 
+            border-top: 1px solid var(--color-border); 
+            line-height: 1.5;
+        }
+        .watermark { 
+            text-align: right; 
+            font-size: 0.75em; 
+            color: #a0a0a0; 
+            padding: 10px 30px;
+        }
+
+        /* Kelas Sembunyi */
+        .hidden { display: none !important; }
+
+        /* Responsif */
+        @media (max-width: 768px) {
+            .grid-container, .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr; /* Stack di layar kecil */
+            }
+            .grid-2-1 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="contentToPrint">
+    <h1>Kalkulator Pajak Kiriman — CN23 & PPFTZ 01 TLDDP</h1>
+    <p class="subtitle">Masukkan detail pengiriman, jenis dokumen, dan komoditi untuk mendapatkan estimasi total biaya.</p>
+
+    <form id="kalkulatorForm">
+        
+        <h2>1. Informasi Pihak Pengirim & Penerima</h2>
+        <div class="grid-container grid-2">
+            <div class="form-group">
+                <label for="namaPengirim">Nama Pengirim:</label>
+                <input type="text" id="namaPengirim" placeholder="Nama Pengirim">
+            </div>
+            <div class="form-group">
+                <label for="hpPengirim">Nomor HP Pengirim:</label>
+                <input type="text" id="hpPengirim" placeholder="No. HP Pengirim">
+            </div>
+            <div class="form-group">
+                <label for="namaPenerima">Nama Penerima:</label>
+                <input type="text" id="namaPenerima" placeholder="Nama Penerima">
+            </div>
+            <div class="form-group">
+                <label for="hpPenerima">Nomor HP Penerima:</label>
+                <input type="text" id="hpPenerima" placeholder="No. HP Penerima">
+            </div>
+        </div>
+        <div class="grid-container grid-2">
+            <div class="form-group">
+                <label for="alamatPengirim">Alamat Pengirim:</label>
+                <input type="text" id="alamatPengirim" placeholder="Alamat Lengkap Pengirim">
+            </div>
+            <div class="form-group">
+                <label for="alamatPenerima">Alamat Penerima:</label>
+                <input type="text" id="alamatPenerima" placeholder="Alamat Lengkap Penerima" required>
+            </div>
+        </div>
+
+        <h2>2. Detail Kiriman & Komoditi</h2>
+        <div class="grid-container grid-4">
+            <div class="form-group">
+                <label for="kotaAsal">Kota Asal:</label>
+                <select id="kotaAsal" required>
+                    <option value="" disabled selected>Pilih Kota Asal</option>
+                    <option value="Batam">Batam (FTZ)</option>
+                    <option value="Jakarta">Jakarta</option>
+                    <option value="Surabaya">Surabaya</option>
+                    <option value="Medan">Medan</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="kotaTujuan">Kota Tujuan:</label>
+                <input type="text" id="kotaTujuan" placeholder="Kota Tujuan" required>
+            </div>
+            <div class="form-group">
+                <label for="totalKemasan">Total Kemasan:</label>
+                <input type="text" id="totalKemasan" placeholder="Cth: 4" required>
+            </div>
+            <div class="form-group">
+                <label for="jenisKemasan">Jenis Kemasan:</label>
+                <select id="jenisKemasan" required>
+                    <option value="" disabled selected>Pilih Jenis Kemasan</option>
+                    <option value="CT">CARTON</option>
+                    <option value="BX">BOX</option>
+                    <option value="PL">PALLET</option>
+                    <option value="PK">PACKAGE</option>
+                    <option value="NE">NONE</option>
+                </select>
+            </div>
+        </div>
+        <div class="grid-container grid-4">
+            <div class="form-group">
+                <label for="beratBarang">Berat Barang (Kg):</label>
+                <input type="number" id="beratBarang" step="0.01" value="" placeholder="Cth: 297.2" required>
+            </div>
+            <div class="form-group">
+                <label for="hargaBarang">Harga Barang (Rp):</label>
+                <input type="text" id="hargaBarang" placeholder="Cth: 131.779.417,47" required> 
+            </div>
+            
+            <div class="form-group hidden" id="hargaBahanBakuGroup">
+                <label for="hargaBahanBaku">Harga Bahan Baku (Rp):</label>
+                <input type="text" id="hargaBahanBaku" placeholder="Cth: 50.000.000">
+            </div>
+
+            <div class="form-group">
+                <label for="jenisDokumen">Jenis Dokumen:</label>
+                <select id="jenisDokumen" required>
+                    <option value="" disabled selected>Pilih Jenis Dokumen</option>
+                    <option value="PPFTZ 01 TLDDP_KONV">PPFTZ 01 TLDDP + Konversi</option>
+                    <option value="PPFTZ 01 TLDDP">PPFTZ 01 TLDDP (BM, PPN, PPh)</option>
+                    <option value="CN23">CN23 (BM, PPh)</option>
+                </select>
+            </div>
+        </div>
+        
+        <h3>Detail Komoditi</h3>
+        <div class="grid-container grid-2">
+            <div class="form-group">
+                <label for="komoditiInput">Deskripsi Komoditi:</label>
+                <input type="text" id="komoditiInput" list="komoditiList" required placeholder="Pilih atau ketik komoditi...">
+                <datalist id="komoditiList"></datalist>
+            </div>
+            <div class="form-group">
+                <label for="hsCodeInput">HS Code (8 Digit):</label>
+                <input type="text" id="hsCodeInput" required placeholder="Otomatis atau Isi Manual">
+            </div>
+        </div>
+        <div class="grid-container grid-2">
+            <div class="form-group">
+                <label for="jumlahBarang">Jumlah Barang & Satuan:</label>
+                <div class="grid-2-1">
+                    <input type="number" id="jumlahBarang" min="1" value="" placeholder="Cth: 31325" required>
+                    <select id="satuanBarang" required>
+                        <option value="" disabled selected>Pilih Satuan</option>
+                        <option value="PCE">PCE</option>
+                        <option value="KGM">KGM</option>
+                        <option value="EACH">EACH</option>
+                        <option value="BOX">BOX</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <h2>3. Tarif Pajak (%) (Otomatis Berdasarkan Komoditi / Diisi Manual)</h2>
+        <div class="grid-container grid-3">
+            <div class="form-group">
+                <label for="tarifBM">Bea Masuk (%):</label>
+                <input type="number" id="tarifBM" min="0" max="100" step="0.1" value="0" required readonly>
+            </div>
+            <div class="form-group hidden" id="ppnGroup">
+                <label for="tarifPPN">PPN (%):</label>
+                <input type="number" id="tarifPPN" min="0" max="100" step="0.1" value="0" required readonly>
+            </div>
+            <div class="form-group">
+                <label for="tarifPPH">PPh (%):</label>
+                <input type="number" id="tarifPPH" min="0" max="100" step="0.1" value="0" required readonly>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button type="submit">Hitung Total Pajak</button>
+        </div>
+    </form>
+
+    <div id="hasilPajak" style="display:none;">
+    </div>
+
+    <p class="disclaimer">
+        Hasil estimasi ini didasarkan pada data input Anda, jenis dokumen, dan tarif pajak komoditi yang dipilih. Jika memilih **LAINNYA (ISI MANUAL)**, Anda wajib mengisi tarif pajak dan HS Code secara manual sesuai ketentuan INSW.
+    </p>
+
+</div>
+<div class="container watermark">
+    Website ini dibuat oleh: Sumberta / @rysbeert / @timelang
+</div>
+
+<script>
+    // --- 1. Data Statis Komoditi (Disimpan di sini agar kode tetap satu file) ---
+    const dataKomoditi = [
+        { nama: "LAINNYA (ISI MANUAL)", hs: "", bm: 0, ppn: 0, pph: 0, manual: true, kategori: "MANUAL" },
+        { nama: "BAJU", hs: "61099030", bm: 25, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "SEPATU", hs: "64041990", bm: 30, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "SANDAL", hs: "64029990", bm: 25, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "SOFA", hs: "94019999", bm: 10, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "KURSI DAN MEJA PLASTIK", hs: "94037090", bm: 20, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "KURSI DAN MEJA KAYU", hs: "94036090", bm: 20, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "LEMARI PLASTIK", hs: "94037090", bm: 20, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "LEMARI, RAK, BUFET KAYU", hs: "94036090", bm: 20, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "LEMARI, RAK, BUFET PLASTIK", hs: "94037090", bm: 20, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "RANJANG KAYU", hs: "94036090", bm: 20, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "RANJANG PLASTIK", hs: "94037090", bm: 20, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "KASUR DAN BANTAL", hs: "94042990", bm: 10, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "SPREI DAN SELIMUT", hs: "94042990", bm: 10, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "KOMPOR", hs: "73211100", bm: 20, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "RICE COOKER, BLENDER, TOASTER, DLL (ELEKTRONIK)", hs: "85166090", bm: 15, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "PIRING DAN GELAS KACA", hs: "70132200", bm: 10, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "PIRING DAN GELAS PLASTIK", hs: "39241099", bm: 20, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "SENDOK DAN GARPU BESI", hs: "82159900", bm: 10, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "SENDOK DAN GARPU PLASTIK", hs: "39241099", bm: 20, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "PANCI, WAJAN, TEKO", hs: "73239110", bm: 15, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "TEMPAT BUMBU DAN WADAH MAKANAN (PLASTIK)", hs: "39241099", bm: 22.5, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "TEMPAT BUMBU DAN WADAH MAKANAN (BESI/ALUMINIUM)", hs: "73239110", bm: 15, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "TELEVISI", hs: "85287292", bm: 15, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "KULKAS", hs: "84181099", bm: 15, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "MESIN CUCI", hs: "84501999", bm: 15, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "SPEAKER DAN SOUND SYSTEM", hs: "85185090", bm: 15, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "SETRIKA", hs: "85164090", bm: 15, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "KIPAS ANGIN", hs: "84145199", bm: 10, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "PRINTER", hs: "84433199", bm: 5, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "TIRAI", hs: "63031990", bm: 25, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "KARPET", hs: "57039019", bm: 25, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "LUKISAN", hs: "97019900", bm: 10, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "VAS BUNGA PLASTIK", hs: "39249090", bm: 20, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "VAS BUNGA KACA", hs: "70139900", bm: 10, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "CERMIN", hs: "70099100", bm: 5, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "JAM DINDING", hs: "91052900", bm: 5, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "LAMPU", hs: "94052190", bm: 15, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "BUKU / DOKUMEN PRIBADI", hs: "49011000", bm: 0, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "SEPEDA", hs: "87120090", bm: 25, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "ALAT OLAHRAGA", hs: "95069990", bm: 5, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "SKINCARE", hs: "33049990", bm: 15, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "PARFUM", hs: "33030000", bm: 10, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "KOSMETIK", hs: "33049990", bm: 15, ppn: 11, pph: 10, kategori: "NON INDUSTRI" },
+        { nama: "SUPLEMEN / VITAMIN", hs: "29362700", bm: 5, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "JAM TANGAN", hs: "91022900", bm: 10, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "SNACK", hs: "19059090", bm: 20, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "TEH", hs: "09023090", bm: 20, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "BUBUK KOPI", hs: "09012119", bm: 20, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" }, 
+        { nama: "COKELAT", hs: "18069090", bm: 15, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "BUMBU", hs: "21039029", bm: 5, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "BUBUK TEH HIJAU", hs: "09023090", bm: 20, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "AROMA TERAPI", hs: "33019090", bm: 5, ppn: 11, pph: 2.5, kategori: "NON INDUSTRI" },
+        { nama: "LILIN", hs: "34060000", bm: 15, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "BUBUK COKLAT", hs: "18061000", bm: 15, ppn: 11, pph: 7.5, kategori: "NON INDUSTRI" },
+        { nama: "SEALING SETS", hs: "40169390", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "VALVE SETS", hs: "84811019", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "GASKET SETS", hs: "84849000", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "CABLE SETS", hs: "85442039", bm: 10, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "BEARING SETS", hs: "84821000", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "CHIP SETS (BAHAN BAKU PRODUKSI ELEKTRONIK)", hs: "85423100", bm: 0, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "RESISTOR (BAHAN BAKU PRODUKSI ELEKTRONIK)", hs: "85331090", bm: 0, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "USB CONNECTOR (BAHAN BAKU PRODUKSI ELEKTRONIK)", hs: "85369039", bm: 0, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "LED/LCD PANEL (BAHAN BAKU PRODUKSI ELEKTRONIK)", hs: "85312000", bm: 0, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "POLYCARBONATE (BAHAN BAKU PRODUKSI PLASTIK)", hs: "39074000", bm: 0, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "POLYPROPYLENE (BAHAN BAKU PRODUKSI PLASTIK)", hs: "39169011", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "RESIN (BAHAN BAKU PRODUKSI PLASTIK)", hs: "39033090", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "COLORANT/PIGMENT (BAHAN BAKU PRODUKSI PLASTIK)", hs: "39033090", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "CIRCUIT BREAKER (PERANGKAT LISTRIK INDUSTRI)", hs: "85362099", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "CONTACTOR (PERANGKAT LISTRIK INDUSTRI)", hs: "85362099", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "RELAY (PERANGKAT LISTRIK INDUSTRI)", hs: "85364110", bm: 0, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "FUSE/SEKERING (PERANGKAT LISTRIK INDUSTRI)", hs: "85351000", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "BUSBAR/COPPER BAR (PERANGKAT LISTRIK INDUSTRI)", hs: "85369099", bm: 0, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "DISTRIBUTION PANEL (PERANGKAT LISTRIK INDUSTRI)", hs: "85371092", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "SOFT STARTER (PERANGKAT LISTRIK INDUSTRI)", hs: "85044090", bm: 10, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "ENCODER (PERANGKAT LISTRIK INDUSTRI)", hs: "85439090", bm: 5, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "POWER SUPPLY (PERANGKAT LISTRIK INDUSTRI)", hs: "85044040", bm: 10, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+        { nama: "INVERTER (PERANGKAT LISTRIK INDUSTRI)", hs: "85044040", bm: 10, ppn: 11, pph: 2.5, kategori: "INDUSTRI" },
+    ];
+
+    // --- 2. Variabel DOM ---
+    const form = document.getElementById('kalkulatorForm');
+    const hasilDiv = document.getElementById('hasilPajak');
+    const komoditiInput = document.getElementById('komoditiInput');
+    const komoditiList = document.getElementById('komoditiList');
+    const hsCodeInput = document.getElementById('hsCodeInput');
+    const jenisDokumenSelect = document.getElementById('jenisDokumen');
+    const hargaBarangInput = document.getElementById('hargaBarang');
+    const hargaBahanBakuInput = document.getElementById('hargaBahanBaku');
+    const hargaBahanBakuGroup = document.getElementById('hargaBahanBakuGroup');
+    const totalKemasanInput = document.getElementById('totalKemasan');
+    const tarifBMInput = document.getElementById('tarifBM');
+    const tarifPPNInput = document.getElementById('tarifPPN');
+    const tarifPPHInput = document.getElementById('tarifPPH');
+    const ppnGroup = document.getElementById('ppnGroup');
+
+    // --- 3. Fungsi Utility ---
+    
+    // Fungsi untuk mengubah angka menjadi format Rupiah string (ex: 123.456.789,00)
+    function formatRupiah(angka, desimal = true) {
+        if (isNaN(angka) || angka === null) return 'Rp 0';
+        let parts = angka.toFixed(desimal ? 2 : 0).toString().split('.');
+        let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        let decimalPart = desimal ? ("," + parts[1]) : "";
+        return "Rp " + integerPart + decimalPart;
+    }
+
+    // Fungsi untuk membersihkan format Rupiah menjadi angka float
+    function cleanRupiah(rupiah) {
+        if (!rupiah) return 0;
+        // Hapus 'Rp', spasi, titik (sebagai ribuan), dan ganti koma menjadi titik (sebagai desimal)
+        return parseFloat(rupiah.replace(/[Rp\s.]/g, '').replace(',', '.'));
+    }
+
+    // --- 4. Fungsi Inisialisasi ---
+    function init() {
+        // Isi Datalist Komoditi
+        dataKomoditi.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.nama;
+            option.textContent = item.nama + (item.kategori ? ` (${item.kategori})` : '');
+            komoditiList.appendChild(option);
+        });
+
+        // Set Listener untuk input Rupiah (Harga Barang & Harga Bahan Baku)
+        [hargaBarangInput, hargaBahanBakuInput].forEach(input => {
+            input.addEventListener('input', function() {
+                const cleanedValue = cleanRupiah(this.value);
+                // Hanya format jika ada nilai yang dimasukkan
+                if (cleanedValue > 0) {
+                    this.value = formatRupiah(cleanedValue, false).replace('Rp ', ''); // Hapus 'Rp ' saat diketik
+                } else if (this.value.trim() === '') {
+                     this.value = ''; // Biarkan kosong jika memang kosong
+                }
+            });
+        });
+
+        // Listener untuk mengatur tarif dan tampilan kolom
+        komoditiInput.addEventListener('change', updateTarifPajak);
+        jenisDokumenSelect.addEventListener('change', updateTarifPajak);
+        
+        // Listener untuk HS Code (Menghapus HS Code jika Komoditi diganti)
+        komoditiInput.addEventListener('input', checkKomoditiMatch);
+
+        // Listener untuk hitung pajak
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            hitungPajak();
+        });
+
+        // Panggil pertama kali untuk set default display PPN (hidden) dan Bahan Baku (hidden)
+        updateTarifPajak();
+    }
+    
+    // --- 5. Fungsi Cek Komoditi dan Bersihkan HS Code ---
+    function checkKomoditiMatch() {
+        const selectedKomoditiName = komoditiInput.value.trim();
+        const komoditi = dataKomoditi.find(item => item.nama === selectedKomoditiName);
+        
+        // Jika teks yang diketik tidak cocok dengan pilihan di list, hapus HS Code
+        if (!komoditi) {
+            hsCodeInput.value = '';
+            // Reset tarif juga
+            tarifBMInput.value = 0;
+            tarifPPNInput.value = 0;
+            tarifPPHInput.value = 0;
+            
+        } else {
+             // Jika cocok, panggil updateTarifPajak untuk mengisi otomatis
+             updateTarifPajak();
+        }
+    }
+
+
+    // --- 6. Fungsi Update Tarif Pajak, Tampilan PPN, dan Kolom Bahan Baku ---
+    function checkManualMode(komoditi) {
+        const isManual = komoditi && komoditi.manual === true;
+        const selectedDokumen = jenisDokumenSelect.value;
+
+        // Atur status ReadOnly
+        hsCodeInput.readOnly = !isManual;
+        tarifBMInput.readOnly = !isManual;
+        tarifPPHInput.readOnly = !isManual;
+        
+        // PPN hanya boleh diisi manual jika dokumen PPFTZ (baik Konv maupun Non-Konv) dan mode manual
+        const isPPFTZ = selectedDokumen.startsWith('PPFTZ 01 TLDDP');
+        tarifPPNInput.readOnly = !(isManual && isPPFTZ);
+
+        // Jika mode manual, pastikan input tarif diizinkan
+        if (isManual) {
+             if (tarifBMInput.value === '0') tarifBMInput.value = '';
+             if (tarifPPNInput.value === '0') tarifPPNInput.value = '';
+             if (tarifPPHInput.value === '0') tarifPPHInput.value = '';
+        }
+    }
+
+    function updateTarifPajak() {
+        const selectedKomoditiName = komoditiInput.value.trim();
+        const selectedDokumen = jenisDokumenSelect.value;
+        const komoditi = dataKomoditi.find(item => item.nama === selectedKomoditiName);
+
+        // Panggil fungsi cek mode manual
+        checkManualMode(komoditi);
+
+        // --- Logika untuk Komoditi Standar (Otomatis) ---
+        if (komoditi && !komoditi.manual) {
+            // Set tarif dan HS Code dari data komoditi
+            hsCodeInput.value = komoditi.hs;
+            tarifBMInput.value = komoditi.bm;
+            tarifPPHInput.value = parseFloat(komoditi.pph).toFixed(1);
+            
+            // Atur tarif PPN untuk PPFTZ
+            if (selectedDokumen.startsWith('PPFTZ 01 TLDDP')) {
+                tarifPPNInput.value = parseFloat(komoditi.ppn || 0).toFixed(1);
+            }
+
+        } else if (!komoditi) {
+             // Jika komoditi tidak cocok (belum dipilih/diketik), reset HS dan Tarif
+             hsCodeInput.value = '';
+             if (!komoditi) {
+                tarifBMInput.value = '0';
+                tarifPPHInput.value = '0';
+                tarifPPNInput.value = '0';
+             }
+        }
+
+        // --- Logika Tampilan PPN dan Harga Bahan Baku berdasarkan Jenis Dokumen ---
+        
+        if (selectedDokumen.startsWith('PPFTZ 01 TLDDP')) {
+            // Tampilkan kolom PPN
+            ppnGroup.classList.remove('hidden');
+            
+            if (selectedDokumen === 'PPFTZ 01 TLDDP_KONV') {
+                // Tampilkan Harga Bahan Baku
+                hargaBahanBakuGroup.classList.remove('hidden');
+            } else {
+                // Sembunyikan Harga Bahan Baku
+                hargaBahanBakuGroup.classList.add('hidden');
+                hargaBahanBakuInput.value = ''; // Kosongkan nilainya
+            }
+
+        } else if (selectedDokumen === 'CN23') {
+            // Sembunyikan PPN dan Harga Bahan Baku
+            ppnGroup.classList.add('hidden');
+            hargaBahanBakuGroup.classList.add('hidden');
+            
+            tarifPPNInput.value = 0; // PPN 0% untuk CN23
+            hargaBahanBakuInput.value = ''; // Kosongkan nilainya
+        }
+
+        // Jika hasil pajak sudah ditampilkan, hitung ulang secara otomatis
+        if (hasilDiv.style.display !== 'none') {
+            hitungPajak();
+        }
+    }
+
+    // --- 7. Fungsi Hitung Pajak ---
+    function hitungPajak() {
+        const selectedKomoditiName = komoditiInput.value.trim();
+        const komoditi = dataKomoditi.find(item => item.nama === selectedKomoditiName);
+        
+        // 1. Validasi
+        if (!komoditi) {
+            alert("Mohon pilih komoditi yang valid dari daftar.");
+            return;
+        }
+
+        const hargaBarang = cleanRupiah(hargaBarangInput.value);
+        const hargaBahanBaku = cleanRupiah(hargaBahanBakuInput.value);
+        const beratBarang = parseFloat(document.getElementById('beratBarang').value);
+        const jumlahBarang = parseInt(document.getElementById('jumlahBarang').value);
+        const hsCode = hsCodeInput.value.trim();
+        const selectedDokumen = jenisDokumenSelect.value;
+        
+        const tarifBM = parseFloat(tarifBMInput.value) / 100;
+        const tarifPPN = parseFloat(tarifPPNInput.value) / 100;
+        const tarifPPH = parseFloat(tarifPPHInput.value) / 100;
+
+        // Validasi Kebutuhan Data (Konversi)
+        if (selectedDokumen === 'PPFTZ 01 TLDDP_KONV' && (hargaBahanBaku === 0 || isNaN(hargaBahanBaku))) {
+             alert("Anda memilih PPFTZ 01 TLDDP + Konversi. Harga Bahan Baku harus diisi.");
+             return;
+        }
+
+        // Validasi Dasar
+        if (selectedDokumen === '') {
+             alert("Mohon pilih Jenis Dokumen.");
+             return;
+        }
+        if (isNaN(hargaBarang) || hargaBarang < 0 || isNaN(beratBarang) || isNaN(jumlahBarang) || hsCode === '') {
+             alert("Mohon masukkan nilai yang valid untuk Harga, Berat, dan Jumlah Barang. HS Code wajib diisi.");
+             return;
+        }
+        
+        // --- 2. Perhitungan Dasar Pajak ---
+        let NDP = 0;
+        let nilaiPajakDasar = 0; // DPP PPN/PPh, N-D-P BM
+        let keteranganNDP = "Harga Barang";
+        
+        if (selectedDokumen === 'PPFTZ 01 TLDDP_KONV') {
+            NDP = hargaBahanBaku;
+            nilaiPajakDasar = hargaBarang; // DPP PPN/PPh (Nilai Konversi) adalah Harga Barang
+            keteranganNDP = "Harga Bahan Baku (NDP BM)";
+        } else {
+            NDP = hargaBarang;
+            nilaiPajakDasar = hargaBarang;
+            keteranganNDP = "Harga Barang (NDP)";
+        }
+        
+        // Bea Masuk (BM) dihitung dari NDP (Harga Barang atau Harga Bahan Baku)
+        const beaMasuk = NDP * tarifBM;
+        
+        // Dasar Pengenaan Pajak PPN/PPh
+        const DPPP = nilaiPajakDasar + beaMasuk;
+        
+        // PPN (Hanya jika PPFTZ)
+        const ppn = (selectedDokumen.startsWith('PPFTZ 01 TLDDP')) ? (DPPP * tarifPPN) : 0;
+        
+        // PPh
+        const pph = DPPP * tarifPPH;
+        
+        const totalPajak = beaMasuk + ppn + pph;
+        const totalKeseluruhan = hargaBarang + totalPajak;
+
+        // --- 3. Tampilkan Hasil ---
+        const satuanBarang = document.getElementById('satuanBarang').value;
+        const jenisKemasan = document.getElementById('jenisKemasan').value;
+        const totalKemasan = totalKemasanInput.value; // Ambil dari input text
+
+        const ppnTarifDisplay = (selectedDokumen.startsWith('PPFTZ 01 TLDDP')) ? (tarifPPN * 100).toFixed(1) : 0;
+
+        // Persiapan Tampilan PPN
+        let ppnDisplay = '';
+        if (selectedDokumen.startsWith('PPFTZ 01 TLDDP')) {
+            ppnDisplay = `<div class="hasil-item"><span>PPN (${ppnTarifDisplay}%)</span><span>${formatRupiah(ppn)}</span></div>`;
+        } else {
+            ppnDisplay = `<div class="hasil-item" style="color: var(--color-secondary);"><span>PPN (0% - Dokumen ${selectedDokumen})</span><span>${formatRupiah(ppn)}</span></div>`;
+        }
+        
+        // Persiapan Tampilan Konversi/NDP
+        let konversiDisplay = '';
+        if (selectedDokumen === 'PPFTZ 01 TLDDP_KONV') {
+            konversiDisplay = `
+                <div class="hasil-item"><span>Nilai Konversi (DPPP/PPh)</span><span>${formatRupiah(hargaBarang)}</span></div>
+                <div class="hasil-item"><span>${keteranganNDP}</span><span>${formatRupiah(hargaBahanBaku)}</span></div>
+            `;
+        } else {
+             konversiDisplay = `
+                <div class="hasil-item"><span>${keteranganNDP}</span><span>${formatRupiah(hargaBarang)}</span></div>
+            `;
+        }
+
+
+        // Final Output
+        hasilDiv.innerHTML = `
+            <h3>Hasil Estimasi Pajak - Dokumen: ${selectedDokumen}</h3>
+            <div class="hasil-item" style="color: #333; font-weight: 500;"><span><strong>HS Code (Tarif Acuan)</strong></span><span><strong>${hsCode}</strong></span></div>
+            <div class="hasil-item"><span>Deskripsi Komoditi</span><span>${komoditiInput.value}</span></div>
+            <div class="hasil-item"><span>Jumlah Barang/Satuan</span><span>${jumlahBarang} ${satuanBarang}</span></div>
+            <div class="hasil-item"><span>Total Kemasan/Jenis</span><span>${totalKemasan} ${jenisKemasan}</span></div>
+            <div class="hasil-item"><span>Berat Barang</span><span>${beratBarang.toFixed(2)} Kg</span></div>
+            ${konversiDisplay}
+            <div class="hasil-item"><span>Bea Masuk (${(tarifBM * 100).toFixed(1)}%)</span><span>${formatRupiah(beaMasuk)}</span></div>
+            ${ppnDisplay}
+            <div class="hasil-item"><span>PPh (${(tarifPPH * 100).toFixed(1)}%)</span><span>${formatRupiah(pph)}</span></div>
+            <div class="hasil-item" style="border-top: 2px solid #aaa; margin-top: 10px;"><span><strong>TOTAL PAJAK YANG HARUS DIBAYAR</strong></span><span><strong>${formatRupiah(totalPajak)}</strong></span></div>
+            <div class="hasil-item" style="border-bottom: none; font-size: 1.2em; color: var(--color-primary);"><span><strong>TOTAL KESELURUHAN (Barang + Pajak)</strong></span><span><strong>${formatRupiah(totalKeseluruhan)}</strong></span></div>
+        `;
+        hasilDiv.style.display = 'block';
+    }
+
+
+    // Jalankan inisialisasi setelah DOM siap
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
